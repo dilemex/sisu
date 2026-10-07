@@ -2,137 +2,186 @@
   color-scheme: dark;
   --bg: #0f172a;
   --bg-card: #1e293b;
+  --bg-elev: #334155;
   --fg: #e2e8f0;
   --fg-muted: #94a3b8;
   --accent: #38bdf8;
   --erro: #f87171;
   --borda: #334155;
+  --nav-h: 64px;
 }
 
 * { box-sizing: border-box; }
 
-body {
+html, body {
   margin: 0;
+  height: 100%;
+}
+
+body {
   background: var(--bg);
   color: var(--fg);
   font-family: system-ui, -apple-system, sans-serif;
-  min-height: 100vh;
 }
 
-/* ---------- Login ---------- */
+button { font-family: inherit; }
+
+/* ---------- LOGIN ---------- */
 .tela-login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 1rem;
 }
-
 .tela-login .card {
-  background: var(--bg-card);
-  padding: 2rem;
-  border-radius: 1rem;
-  width: 100%;
-  max-width: 380px;
-  border: 1px solid var(--borda);
+  background: var(--bg-card); padding: 2rem; border-radius: 1rem;
+  width: 100%; max-width: 380px; border: 1px solid var(--borda);
 }
-
-.tela-login h1 {
-  margin: 0 0 0.25rem;
-  font-size: 2rem;
-  color: var(--accent);
+.tela-login h1 { margin: 0 0 .25rem; font-size: 2rem; color: var(--accent); }
+.subtitulo { margin: 0 0 1.5rem; color: var(--fg-muted); font-size: .875rem; }
+.tela-login form { display: flex; flex-direction: column; gap: 1rem; }
+.tela-login label { display: flex; flex-direction: column; gap: .35rem; font-size: .875rem; color: var(--fg-muted); }
+.tela-login input, .modal input, .modal select {
+  padding: .75rem; border-radius: .5rem;
+  border: 1px solid var(--borda); background: var(--bg);
+  color: var(--fg); font-size: 1rem;
 }
-
-.subtitulo {
-  margin: 0 0 1.5rem;
-  color: var(--fg-muted);
-  font-size: 0.875rem;
+.tela-login input:focus, .modal input:focus, .modal select:focus {
+  outline: 2px solid var(--accent); outline-offset: -1px;
 }
+.erro { color: var(--erro); font-size: .875rem; margin: 0; min-height: 1.2em; }
 
-.tela-login form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.tela-login label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.875rem;
-  color: var(--fg-muted);
-}
-
-.tela-login input {
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--borda);
-  background: var(--bg);
-  color: var(--fg);
-  font-size: 1rem;
-}
-
-.tela-login input:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
-}
-
+/* ---------- BOTÕES ---------- */
 button {
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  border: none;
-  background: var(--accent);
-  color: #0f172a;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
+  padding: .7rem 1rem; border-radius: .5rem; border: none;
+  background: var(--accent); color: #0f172a;
+  font-weight: 600; font-size: .95rem; cursor: pointer;
   transition: opacity .15s;
 }
-
-button:hover { opacity: 0.9; }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-
+button:hover { opacity: .9; }
+button:disabled { opacity: .5; cursor: not-allowed; }
 .botao-secundario {
-  background: transparent;
-  color: var(--fg-muted);
-  border: 1px solid var(--borda);
-  font-size: 0.875rem;
-  padding: 0.5rem 0.875rem;
+  background: transparent; color: var(--fg-muted);
+  border: 1px solid var(--borda); font-size: .875rem;
+  padding: .5rem .875rem;
 }
+.botao-primario { background: var(--accent); color: #0f172a; }
+.bloco-largo { width: 100%; margin-top: 1rem; }
 
-.erro {
-  color: var(--erro);
-  font-size: 0.875rem;
-  margin: 0;
-  min-height: 1.2em;
+/* ---------- SHELL ---------- */
+.shell {
+  min-height: 100vh;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
 }
-
-/* ---------- App ---------- */
-.app {
-  padding: 2rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
 .topo {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; padding: 1rem 1.25rem .5rem;
+  max-width: 900px; margin: 0 auto;
+}
+.topo h1 { margin: 0; font-size: 1.25rem; }
+.familia { margin: .15rem 0 0; color: var(--fg-muted); font-size: .8rem; }
+.conteudo { padding: 1rem 1.25rem 2rem; max-width: 900px; margin: 0 auto; }
+
+/* ---------- BOTTOM NAV ---------- */
+.bottom-nav {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  display: flex; justify-content: space-around;
+  background: var(--bg-card); border-top: 1px solid var(--borda);
+  z-index: 50;
+}
+.bottom-nav a {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px; color: var(--fg-muted); text-decoration: none;
+  font-size: .7rem; transition: color .15s;
+}
+.bottom-nav a .icone { font-size: 1.3rem; }
+.bottom-nav a.ativo { color: var(--accent); }
+
+/* ---------- PÁGINA ---------- */
+.pagina-cabecalho {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 1rem;
+}
+.pagina-cabecalho h2 { margin: 0; font-size: 1.25rem; }
+
+.lista {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: .5rem;
+}
+.item {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .875rem 1rem; border-radius: .75rem;
+  background: var(--bg-card); border: 1px solid var(--borda);
+}
+.item.inativo { opacity: .5; }
+.item-info { flex: 1; min-width: 0; }
+.item-titulo {
+  font-weight: 600; font-size: .95rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.item-sub { color: var(--fg-muted); font-size: .78rem; margin-top: .15rem; }
+.item-valor { font-variant-numeric: tabular-nums; font-weight: 600; }
+.item-acoes { display: flex; gap: .25rem; }
+.item-acoes button {
+  background: transparent; padding: .35rem;
+  font-size: 1rem; line-height: 1;
+  color: var(--fg-muted); font-weight: normal;
+}
+.item-acoes button:hover { color: var(--fg); }
+
+.tag {
+  font-size: .65rem; background: var(--bg-elev); color: var(--fg-muted);
+  padding: .1rem .4rem; border-radius: .25rem;
+  text-transform: uppercase; letter-spacing: .02em; font-weight: 500;
 }
 
-.topo h1 { margin: 0; font-size: 1.5rem; }
-.familia { margin: 0.25rem 0 0; color: var(--fg-muted); font-size: 0.875rem; }
-
-.placeholder {
-  background: var(--bg-card);
-  border: 1px solid var(--borda);
-  border-radius: 1rem;
-  padding: 2rem;
+.vazio {
+  text-align: center; padding: 3rem 1rem;
+  color: var(--fg-muted); font-size: .9rem;
 }
-
-.placeholder h2 { margin-top: 0; }
-.checklist { list-style: none; padding: 0; line-height: 2; }
-
 .carregando { text-align: center; padding: 3rem; color: var(--fg-muted); }
+
+.cartao-info {
+  background: var(--bg-card); border: 1px solid var(--borda);
+  border-radius: 1rem; padding: 1.5rem;
+}
+.cartao-info h2 { margin-top: 0; }
+.checklist { list-style: none; padding: 0; line-height: 2; margin: 0; }
+
+/* ---------- MODAL ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.6);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  animation: fadein .15s;
+}
+@keyframes fadein { from { opacity: 0 } to { opacity: 1 } }
+.modal {
+  background: var(--bg-card); border: 1px solid var(--borda);
+  border-radius: 1rem; width: 100%; max-width: 420px;
+  max-height: 90vh; overflow: auto;
+  display: flex; flex-direction: column;
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 1.25rem .5rem;
+}
+.modal-header h3 { margin: 0; font-size: 1.05rem; }
+.modal-fechar {
+  background: transparent; color: var(--fg-muted);
+  padding: .25rem .5rem; font-size: 1.1rem;
+}
+.modal-corpo {
+  padding: .5rem 1.25rem; display: flex; flex-direction: column; gap: .75rem;
+}
+.modal-corpo label {
+  display: flex; flex-direction: column; gap: .35rem;
+  font-size: .85rem; color: var(--fg-muted);
+}
+.linha-dupla { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.modal-rodape {
+  display: flex; justify-content: flex-end; gap: .5rem;
+  padding: 1rem 1.25rem; border-top: 1px solid var(--borda); margin-top: .5rem;
+}
