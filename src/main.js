@@ -10,6 +10,26 @@ import { renderAccounts } from './pages/accounts.js'
 import { renderCards } from './pages/cards.js'
 import { renderMore } from './pages/more.js'
 
+// Detecta nova versão do Service Worker e recarrega
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.getRegistration().then((reg) => {
+      if (!reg) return
+      reg.addEventListener('updatefound', () => {
+        const novo = reg.installing
+        if (!novo) return
+        novo.addEventListener('statechange', () => {
+          if (novo.state === 'activated' && navigator.serviceWorker.controller) {
+            console.log('Sisu: nova versão detectada, recarregando…')
+            window.location.reload()
+          }
+        })
+      })
+      reg.update()
+    })
+  })
+}
+
 const app = document.querySelector('#app')
 
 registerRoute('/', renderDashboard)
