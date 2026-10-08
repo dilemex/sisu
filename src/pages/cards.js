@@ -2,14 +2,24 @@ import { listCards, createCard, updateCard, toggleCardActive } from '../lib/db/c
 import { listAccounts } from '../lib/db/accounts.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
+import { getCardInvoices } from '../lib/db/balances.js'
 
 export async function renderCards(root) {
   async function carregar() {
     root.innerHTML = `<p class="carregando">Carregando…</p>`
     const { family } = getState()
-    const [cartoes, contas] = await Promise.all([
+
+    // Fatura do mês atual
+    const agora = new Date()
+    const ym = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`
+    const ultimoDia = new Date(agora.getFullYear(), agora.getMonth() + 1, 0).getDate()
+    const from = `${ym}-01`
+    const to = `${ym}-${String(ultimoDia).padStart(2, '0')}`
+
+    const [cartoes, contas, faturas] = await Promise.all([
       listCards(family.id),
-      listAccounts(family.id)
+      listAccounts(family.id),
+      getCardInvoices(family.id, { from, to })
     ])
 
     root.innerHTML = `
@@ -19,7 +29,7 @@ export async function renderCards(root) {
       </div>
       ${cartoes.length === 0
         ? `<p class="vazio">Nenhum cartão cadastrado ainda.</p>`
-        : `<ul class="lista">${cartoes.map(item).join('')}</ul>`}
+        : `<ul class="lista">${cartoes.map((c) => item(c, faturas[c.id] ?? 0)).join('')}</ul>`}
     `
 
     root.querySelector('#novo').onclick = () => abrirForm(null, contas, carregar)
@@ -29,15 +39,14 @@ export async function renderCards(root) {
     })
     root.querySelectorAll('[data-toggle]').forEach((b) => {
       b.onclick = async () => {
-        try {
-          await toggleCardActive(b.dataset.toggle)
-          carregar()
-        } catch (e) { alert(e.message) }
+        try { await toggleCardActive(b.dataset.toggle); carregar() }
+        catch (e) { alert(e.message) }
       }
     })
   }
 
-  function item(c) {
+  function item(c, fatura) {
+    const disponivel = c.limit_amount ? Number(c.limit_amount) - fatura : null
     return `
       <li class="item ${c.is_active ? '' : 'inativo'}">
         <div class="item-info">
@@ -47,12 +56,17 @@ export async function renderCards(root) {
           </div>
           <div class="item-sub">
             ${c.institution ? escapeHtml(c.institution) + ' · ' : ''}
-            fecha dia ${c.closing_day}, vence dia ${c.due_day}
+            fecha ${c.closing_day}, vence ${c.due_day}
             ${c.payment_account ? ' · paga em ' + escapeHtml(c.payment_account.name) : ''}
           </div>
         </div>
         <div class="item-valor">
-          ${c.limit_amount ? 'Limite ' + formatBRL(c.limit_amount) : ''}
+          <div class="fatura">${formatBRL(fatura)}</div>
+          <div class="item-sub" style="text-align:right">
+            ${c.limit_amount
+              ? 'Disp. ' + formatBRL(disponivel)
+              : ''}
+          </div>
         </div>
         <div class="item-acoes">
           <button data-editar="${c.id}" title="Editar">✏️</button>

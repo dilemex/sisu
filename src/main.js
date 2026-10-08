@@ -9,6 +9,7 @@ import { renderDashboard } from './pages/dashboard.js'
 import { renderAccounts } from './pages/accounts.js'
 import { renderCards } from './pages/cards.js'
 import { renderMore } from './pages/more.js'
+import { renderTransactions } from './pages/transactions.js'
 
 // Detecta nova versão do Service Worker e recarrega
 if ('serviceWorker' in navigator) {
@@ -73,5 +74,5 @@ async function boot() {
   if (session) mostrarApp()
   else mostrarLogin()
 }
-
+registerRoute('/lancamentos', renderTransactions)
 boot()

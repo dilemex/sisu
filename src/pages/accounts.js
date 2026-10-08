@@ -1,4 +1,5 @@
 import { listAccounts, createAccount, updateAccount, toggleAccountActive } from '../lib/db/accounts.js'
+import { getAccountBalances } from '../lib/db/balances.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
 
@@ -16,16 +17,30 @@ export async function renderAccounts(root) {
   async function carregar() {
     root.innerHTML = `<p class="carregando">Carregando…</p>`
     const { family } = getState()
-    const contas = await listAccounts(family.id)
+
+    const [contas, deltas] = await Promise.all([
+      listAccounts(family.id),
+      getAccountBalances(family.id)
+    ])
+
+    const total = contas
+      .filter((c) => c.is_active)
+      .reduce((s, c) => s + Number(c.initial_balance) + (deltas[c.id] ?? 0), 0)
 
     root.innerHTML = `
       <div class="pagina-cabecalho">
         <h2>Contas</h2>
         <button id="nova" class="botao-primario">+ Nova</button>
       </div>
+
+      <div class="saldo-total">
+        <span class="label">Saldo total</span>
+        <strong>${formatBRL(total)}</strong>
+      </div>
+
       ${contas.length === 0
         ? `<p class="vazio">Nenhuma conta cadastrada ainda.</p>`
-        : `<ul class="lista">${contas.map(item).join('')}</ul>`}
+        : `<ul class="lista">${contas.map((c) => item(c, deltas[c.id] ?? 0)).join('')}</ul>`}
     `
 
     root.querySelector('#nova').onclick = () => abrirForm(null, carregar)
@@ -35,15 +50,14 @@ export async function renderAccounts(root) {
     })
     root.querySelectorAll('[data-toggle]').forEach((b) => {
       b.onclick = async () => {
-        try {
-          await toggleAccountActive(b.dataset.toggle)
-          carregar()
-        } catch (e) { alert(e.message) }
+        try { await toggleAccountActive(b.dataset.toggle); carregar() }
+        catch (e) { alert(e.message) }
       }
     })
   }
 
-  function item(c) {
+  function item(c, delta) {
+    const saldo = Number(c.initial_balance) + delta
     return `
       <li class="item ${c.is_active ? '' : 'inativo'}">
         <div class="item-info">
@@ -55,7 +69,7 @@ export async function renderAccounts(root) {
             ${labelTipo(c.type)}${c.institution ? ' · ' + escapeHtml(c.institution) : ''}
           </div>
         </div>
-        <div class="item-valor">${formatBRL(c.initial_balance)}</div>
+        <div class="item-valor ${saldo < 0 ? 'vermelho' : ''}">${formatBRL(saldo)}</div>
         <div class="item-acoes">
           <button data-editar="${c.id}" title="Editar">✏️</button>
           <button data-toggle="${c.id}" title="${c.is_active ? 'Desativar' : 'Reativar'}">
@@ -77,9 +91,7 @@ export async function renderAccounts(root) {
       <label>Tipo
         <select name="type" required>
           ${TIPOS.map((t) => `
-            <option value="${t.valor}" ${conta?.type === t.valor ? 'selected' : ''}>
-              ${t.label}
-            </option>
+            <option value="${t.valor}" ${conta?.type === t.valor ? 'selected' : ''}>${t.label}</option>
           `).join('')}
         </select>
       </label>
@@ -88,6 +100,7 @@ export async function renderAccounts(root) {
       </label>
       <label>Saldo inicial
         <input name="initialBalance" type="number" step="0.01" value="${conta?.initial_balance ?? 0}" />
+        <small class="dica">Saldo no momento em que você começou a usar o Sisu.</small>
       </label>
     `
 
@@ -106,8 +119,7 @@ export async function renderAccounts(root) {
         } else {
           await createAccount({
             familyId: family.id,
-            name: data.name,
-            type: data.type,
+            name: data.name, type: data.type,
             institution: data.institution,
             initialBalance: data.initialBalance
           })
