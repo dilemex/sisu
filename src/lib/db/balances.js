@@ -47,3 +47,82 @@ export async function getCardInvoices(familyId, { from, to }) {
   }
   return porCartao
 }
+/**
+ * Resumo do período: total entradas, saídas e saldo.
+ */
+export async function getPeriodSummary(familyId, { from, to }) {
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('type, amount')
+    .eq('family_id', familyId)
+    .gte('date', from)
+    .lte('date', to)
+  if (error) throw error
+
+  let receitas = 0, despesas = 0
+  for (const t of data) {
+    if (t.type === 'income') receitas += Number(t.amount)
+    else despesas += Number(t.amount)
+  }
+  return { receitas, despesas, saldo: receitas - despesas }
+}
+
+/**
+ * Top N categorias de despesa no período.
+ * Retorna [{ category, total }, ...] ordenado desc.
+ */
+export async function getTopExpenseCategories(familyId, { from, to, limit = 5 }) {
+  const { data, error } = await supabase
+    .from('transactions')
+    .select(`
+      amount,
+      category:categories ( id, name, icon )
+    `)
+    .eq('family_id', familyId)
+    .eq('type', 'expense')
+    .gte('date', from)
+    .lte('date', to)
+  if (error) throw error
+
+  const acumulado = new Map()
+  for (const t of data) {
+    const id = t.category?.id ?? '__sem_categoria__'
+    const nome = t.category?.name ?? 'Sem categoria'
+    const icone = t.category?.icon ?? '❓'
+    if (!acumulado.has(id)) acumulado.set(id, { id, nome, icone, total: 0 })
+    acumulado.get(id).total += Number(t.amount)
+  }
+
+  return [...acumulado.values()]
+    .sort((a, b) => b.total - a.total)
+    .slice(0, limit)
+}
+
+/**
+ * Próximos cartões a vencer (≤ N dias) a partir de hoje.
+ */
+export async function getUpcomingCardDue(familyId, withinDays = 3) {
+  const { data, error } = await supabase
+    .from('credit_cards')
+    .select('id, name, due_day, closing_day')
+    .eq('family_id', familyId)
+    .eq('is_active', true)
+  if (error) throw error
+
+  const hoje = new Date()
+  const diaHoje = hoje.getDate()
+  const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate()
+
+  const alertas = []
+  for (const c of data) {
+    let dias = c.due_day - diaHoje
+    if (dias < 0) {
+      // já passou nesse mês → próximo mês
+      dias += ultimoDiaMes
+    }
+    if (dias <= withinDays) {
+      alertas.push({ ...c, diasParaVencer: dias })
+    }
+  }
+  return alertas.sort((a, b) => a.diasParaVencer - b.diasParaVencer)
+}
