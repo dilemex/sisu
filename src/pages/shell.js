@@ -3,11 +3,10 @@ import { getCurrentRoute, startRouter } from '../lib/router.js'
 import { escapeHtml } from '../lib/ui.js'
 
 const NAV_ITENS = [
-  { rota: '/',             icone: '🏠', label: 'Início'   },
-  { rota: '/lancamentos',  icone: '📋', label: 'Lançar'   },
-  { rota: '/contas',       icone: '🏦', label: 'Contas'   },
-  { rota: '/cartoes',      icone: '💳', label: 'Cartões'  },
-  { rota: '/mais',         icone: '⋯',  label: 'Mais'    }
+  { rota: '/',             icone: '🏠', label: 'Início'       },
+  { rota: '/lancamentos',  icone: '📋', label: 'Lançamentos'  },
+  { rota: '/planejamento', icone: '🧭', label: 'Planejamento' },
+  { rota: '/mais',         icone: '⋯',  label: 'Mais'         }
 ]
 
 export function renderAppShell(root, membro) {

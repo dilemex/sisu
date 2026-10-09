@@ -3,6 +3,8 @@ import { supabase } from './lib/supabase.js'
 import { getCurrentMember } from './lib/auth.js'
 import { setState } from './lib/state.js'
 import { registerRoute } from './lib/router.js'
+import { generateDueRecurrences } from './lib/db/recurring.js'
+
 import { renderLogin } from './pages/login.js'
 import { renderAppShell } from './pages/shell.js'
 import { renderDashboard } from './pages/dashboard.js'
@@ -12,33 +14,22 @@ import { renderMore } from './pages/more.js'
 import { renderTransactions } from './pages/transactions.js'
 import { renderGoals } from './pages/goals.js'
 import { renderInstallments } from './pages/installments.js'
-
-// Detecta nova versão do Service Worker e recarrega
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.getRegistration().then((reg) => {
-      if (!reg) return
-      reg.addEventListener('updatefound', () => {
-        const novo = reg.installing
-        if (!novo) return
-        novo.addEventListener('statechange', () => {
-          if (novo.state === 'activated' && navigator.serviceWorker.controller) {
-            console.log('Sisu: nova versão detectada, recarregando…')
-            window.location.reload()
-          }
-        })
-      })
-      reg.update()
-    })
-  })
-}
+import { renderRecurring } from './pages/recurring.js'
+import { renderPlanning } from './pages/planning.js'
+import { renderBudgets } from './pages/budgets.js'
 
 const app = document.querySelector('#app')
 
-registerRoute('/', renderDashboard)
-registerRoute('/contas', renderAccounts)
-registerRoute('/cartoes', renderCards)
-registerRoute('/mais', renderMore)
+registerRoute('/',               renderDashboard)
+registerRoute('/contas',         renderAccounts)
+registerRoute('/cartoes',        renderCards)
+registerRoute('/lancamentos',    renderTransactions)
+registerRoute('/metas',          renderGoals)
+registerRoute('/parcelamentos',  renderInstallments)
+registerRoute('/recorrencias',   renderRecurring)
+registerRoute('/planejamento',   renderPlanning)
+registerRoute('/orcamentos',     renderBudgets)
+registerRoute('/mais',           renderMore)
 
 supabase.auth.onAuthStateChange((_event, session) => {
   if (session) mostrarApp()
@@ -64,6 +55,12 @@ async function mostrarApp() {
       return
     }
     setState({ member: membro, family: membro.family })
+
+    // Gera recorrências devidas ao entrar (fire and forget, não bloqueia a UI)
+    generateDueRecurrences(membro.family.id).catch((e) => {
+      console.warn('Falha ao gerar recorrências:', e.message)
+    })
+
     app.innerHTML = ''
     renderAppShell(app, membro)
   } catch (err) {
@@ -76,7 +73,5 @@ async function boot() {
   if (session) mostrarApp()
   else mostrarLogin()
 }
-registerRoute('/metas', renderGoals)
-registerRoute('/parcelamentos', renderInstallments)
-registerRoute('/lancamentos', renderTransactions)
+
 boot()

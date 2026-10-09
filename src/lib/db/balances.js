@@ -154,3 +154,35 @@ export async function getCardCommitted(familyId) {
   }
   return porCartao
 }
+
+/**
+ * Evolução dos últimos N meses de despesas (para mini gráfico).
+ * Retorna [{ ym: '2026-10', label: 'Out', total: 1234.56 }, ...]
+ */
+export async function getMonthEvolution(familyId, months = 6) {
+  const hoje = new Date()
+  const inicio = new Date(hoje.getFullYear(), hoje.getMonth() - (months - 1), 1)
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('date, amount, type')
+    .eq('family_id', familyId)
+    .eq('type', 'expense')
+    .gte('date', inicio.toISOString().slice(0, 10))
+  if (error) throw error
+
+  const porMes = {}
+  for (const t of data) {
+    const ym = t.date.slice(0, 7)
+    porMes[ym] = (porMes[ym] ?? 0) + Number(t.amount)
+  }
+
+  const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+  const out = []
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1)
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    out.push({ ym, label: MESES[d.getMonth()], total: porMes[ym] ?? 0 })
+  }
+  return out
+}
