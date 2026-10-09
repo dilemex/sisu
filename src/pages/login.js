@@ -4,7 +4,13 @@ export function renderLogin(root) {
   root.innerHTML = `
     <main class="tela-login">
       <div class="card">
-        <h1>SISU</h1>
+        <div class="login-logo">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 5 L28 26 L4 26 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M16 13 L22 26 L10 26 Z" fill="currentColor"/>
+       </svg>
+      <span>SISU</span>
+    </div>
         <p class="subtitulo">Painel de comando financeiro da família</p>
 
         <form id="login-form">
