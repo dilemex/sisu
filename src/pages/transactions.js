@@ -1,12 +1,16 @@
 import {
-    listTransactions, createTransaction, updateTransaction, deleteTransaction
-  } from '../lib/db/transactions.js'
-  import { listCategories } from '../lib/db/categories.js'
-  import { listAccounts } from '../lib/db/accounts.js'
-  import { listCards } from '../lib/db/cards.js'
-  import { listMembers } from '../lib/db/members.js'
-  import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
-  import { getState } from '../lib/state.js'
+  listTransactions,
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+  createInstallmentPurchase
+} from '../lib/db/transactions.js'
+import { listCategories } from '../lib/db/categories.js'
+import { listAccounts } from '../lib/db/accounts.js'
+import { listCards } from '../lib/db/cards.js'
+import { listMembers } from '../lib/db/members.js'
+import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
+import { getState } from '../lib/state.js'
   
   // ---------- Helpers de data ----------
   
@@ -179,10 +183,24 @@ import {
           </label>
         </div>
   
-        <label>Valor
+        <label>Valor total
           <input name="amount" type="number" step="0.01" min="0.01" required inputmode="decimal"
                  value="${transacao?.amount ?? ''}" placeholder="0,00" />
         </label>
+  
+        <div class="parcelar-box" id="parcelar-box">
+          <label class="checkbox-linha">
+<input type="checkbox" name="parcelar" id="parcelar" ${editando ? 'disabled' : ''} />
+            <span>Compra parcelada?</span>
+          </label>
+          <div class="parcelar-campos" id="parcelar-campos" hidden>
+            <label>Número de parcelas
+              <input name="installments" type="number" min="2" max="48" value="2" />
+            </label>
+            <p class="preview-parcela" id="preview-parcela"></p>
+          </div>
+          ${editando ? '<small class="dica">Parcelamento não pode ser alterado após criado.</small>' : ''}
+        </div>
   
         <label>Data
           <input name="date" type="date" required value="${transacao?.date ?? new Date().toISOString().slice(0,10)}" />
@@ -190,7 +208,7 @@ import {
   
         <label>Descrição (opcional)
           <input name="description" maxlength="120" value="${escapeHtml(transacao?.description ?? '')}"
-                 placeholder="Ex: Mercado do mês" />
+                 placeholder="Ex: TV da sala" />
         </label>
   
         <label>Categoria
@@ -208,14 +226,12 @@ import {
         <label>Origem / destino
           <select name="origem" id="sel-origem" required>
             ${contas.map((a) => `
-              <option value="account:${a.id}"
-                ${transacao?.account_id === a.id ? 'selected' : ''}>
+              <option value="account:${a.id}" ${transacao?.account_id === a.id ? 'selected' : ''}>
                 🏦 ${escapeHtml(a.name)}
               </option>
             `).join('')}
             ${cartoes.map((c) => `
-              <option value="card:${c.id}"
-                ${transacao?.credit_card_id === c.id ? 'selected' : ''}>
+              <option value="card:${c.id}" ${transacao?.credit_card_id === c.id ? 'selected' : ''}>
                 💳 ${escapeHtml(c.name)}
               </option>
             `).join('')}
@@ -257,6 +273,8 @@ import {
           }
           if (editando) {
             await updateTransaction(transacao.id, payload)
+          } else if (data.parcelar === 'on' && Number(data.installments) >= 2) {
+            await createInstallmentPurchase(family.id, payload, Number(data.installments))
           } else {
             await createTransaction(family.id, payload)
           }
@@ -264,7 +282,6 @@ import {
         }
       })
   
-      // filtra categorias conforme tipo selecionado
       const form = document.querySelector('.modal-form')
       const selCat = form.querySelector('#sel-categoria')
       const optgroups = selCat.querySelectorAll('optgroup')
@@ -276,7 +293,6 @@ import {
           g.style.display = g.dataset.grupo === tipo ? '' : 'none'
           g.disabled = g.dataset.grupo !== tipo
         })
-        // Se categoria atual não bate com o tipo, limpa
         const optAtual = selCat.selectedOptions[0]
         if (optAtual && optAtual.closest('optgroup')?.dataset.grupo !== tipo) {
           selCat.value = ''
@@ -285,8 +301,35 @@ import {
       radios.forEach((r) => r.addEventListener('change', ajustarCategorias))
       ajustarCategorias()
   
-      // foco no valor
-      setTimeout(() => form.querySelector('input[name="amount"]')?.focus(), 100)
+      // Parcelamento
+      const chkParcelar = form.querySelector('#parcelar')
+      const camposParcelar = form.querySelector('#parcelar-campos')
+      const inputParcelas = form.querySelector('input[name="installments"]')
+      const inputValor = form.querySelector('input[name="amount"]')
+      const preview = form.querySelector('#preview-parcela')
+  
+      function atualizarPreview() {
+        const total = Number(inputValor.value) || 0
+        const n = Number(inputParcelas.value) || 1
+        if (total > 0 && n >= 2) {
+          const cada = total / n
+          preview.textContent = `${n}x de ${formatBRL(cada)}`
+        } else {
+          preview.textContent = ''
+        }
+      }
+  
+      chkParcelar.addEventListener('change', () => {
+        camposParcelar.hidden = !chkParcelar.checked
+        if (chkParcelar.checked) {
+          atualizarPreview()
+          inputParcelas.focus()
+        }
+      })
+      inputParcelas.addEventListener('input', atualizarPreview)
+      inputValor.addEventListener('input', atualizarPreview)
+  
+      setTimeout(() => inputValor.focus(), 100)
     }
   
     function opt(cat, selecionadoId) {

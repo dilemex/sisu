@@ -126,3 +126,31 @@ export async function getUpcomingCardDue(familyId, withinDays = 3) {
   }
   return alertas.sort((a, b) => a.diasParaVencer - b.diasParaVencer)
 }
+
+/**
+ * Limite comprometido = soma de todas as despesas no cartão
+ * a partir do início do mês corrente (inclui parcelas futuras).
+ * É o que o banco "reserva" do limite assim que a compra é feita.
+ */
+export async function getCardCommitted(familyId) {
+  const hoje = new Date()
+  const ym = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`
+  const inicioMes = `${ym}-01`
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('amount, credit_card_id')
+    .eq('family_id', familyId)
+    .eq('type', 'expense')
+    .not('credit_card_id', 'is', null)
+    .gte('date', inicioMes)
+  if (error) throw error
+
+  const porCartao = {}
+  for (const t of data) {
+    if (!t.credit_card_id) continue
+    porCartao[t.credit_card_id] ??= 0
+    porCartao[t.credit_card_id] += Number(t.amount)
+  }
+  return porCartao
+}

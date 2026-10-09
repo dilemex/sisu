@@ -2,24 +2,24 @@ import { listCards, createCard, updateCard, toggleCardActive } from '../lib/db/c
 import { listAccounts } from '../lib/db/accounts.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
-import { getCardInvoices } from '../lib/db/balances.js'
+import { getCardInvoices, getCardCommitted } from '../lib/db/balances.js'
 
 export async function renderCards(root) {
   async function carregar() {
     root.innerHTML = `<p class="carregando">Carregando…</p>`
     const { family } = getState()
 
-    // Fatura do mês atual
     const agora = new Date()
     const ym = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`
     const ultimoDia = new Date(agora.getFullYear(), agora.getMonth() + 1, 0).getDate()
     const from = `${ym}-01`
     const to = `${ym}-${String(ultimoDia).padStart(2, '0')}`
 
-    const [cartoes, contas, faturas] = await Promise.all([
+    const [cartoes, contas, faturas, comprometidos] = await Promise.all([
       listCards(family.id),
       listAccounts(family.id),
-      getCardInvoices(family.id, { from, to })
+      getCardInvoices(family.id, { from, to }),
+      getCardCommitted(family.id)
     ])
 
     root.innerHTML = `
@@ -29,7 +29,9 @@ export async function renderCards(root) {
       </div>
       ${cartoes.length === 0
         ? `<p class="vazio">Nenhum cartão cadastrado ainda.</p>`
-        : `<ul class="lista">${cartoes.map((c) => item(c, faturas[c.id] ?? 0)).join('')}</ul>`}
+        : `<ul class="lista">${cartoes.map((c) =>
+            item(c, faturas[c.id] ?? 0, comprometidos[c.id] ?? 0)
+          ).join('')}</ul>`}
     `
 
     root.querySelector('#novo').onclick = () => abrirForm(null, contas, carregar)
@@ -45,10 +47,13 @@ export async function renderCards(root) {
     })
   }
 
-  function item(c, fatura) {
-    const disponivel = c.limit_amount ? Number(c.limit_amount) - fatura : null
+  function item(c, fatura, comprometido) {
+    const limite = c.limit_amount ? Number(c.limit_amount) : null
+    const disponivel = limite != null ? limite - comprometido : null
+    const pctUsado = limite ? Math.min(100, Math.round((comprometido / limite) * 100)) : 0
+
     return `
-      <li class="item ${c.is_active ? '' : 'inativo'}">
+      <li class="item item-card ${c.is_active ? '' : 'inativo'}">
         <div class="item-info">
           <div class="item-titulo">
             ${escapeHtml(c.name)}
@@ -59,14 +64,27 @@ export async function renderCards(root) {
             fecha ${c.closing_day}, vence ${c.due_day}
             ${c.payment_account ? ' · paga em ' + escapeHtml(c.payment_account.name) : ''}
           </div>
+          ${limite != null ? `
+            <div class="card-bar-track">
+              <div class="card-bar-fill" style="width:${pctUsado}%"></div>
+            </div>
+            <div class="card-metricas">
+              <span>${pctUsado}% do limite comprometido</span>
+              <span>Limite ${formatBRL(limite)}</span>
+            </div>
+          ` : ''}
         </div>
-        <div class="item-valor">
-          <div class="fatura">${formatBRL(fatura)}</div>
-          <div class="item-sub" style="text-align:right">
-            ${c.limit_amount
-              ? 'Disp. ' + formatBRL(disponivel)
-              : ''}
+        <div class="item-valor card-valores">
+          <div>
+            <span class="label-mini">Fatura do mês</span>
+            <strong>${formatBRL(fatura)}</strong>
           </div>
+          ${disponivel != null ? `
+            <div>
+              <span class="label-mini">Disponível</span>
+              <strong class="${disponivel < 0 ? 'vermelho' : 'verde'}">${formatBRL(disponivel)}</strong>
+            </div>
+          ` : ''}
         </div>
         <div class="item-acoes">
           <button data-editar="${c.id}" title="Editar">✏️</button>

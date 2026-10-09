@@ -10,6 +10,8 @@ import { renderAccounts } from './pages/accounts.js'
 import { renderCards } from './pages/cards.js'
 import { renderMore } from './pages/more.js'
 import { renderTransactions } from './pages/transactions.js'
+import { renderGoals } from './pages/goals.js'
+import { renderInstallments } from './pages/installments.js'
 
 // Detecta nova versão do Service Worker e recarrega
 if ('serviceWorker' in navigator) {
@@ -74,5 +76,7 @@ async function boot() {
   if (session) mostrarApp()
   else mostrarLogin()
 }
+registerRoute('/metas', renderGoals)
+registerRoute('/parcelamentos', renderInstallments)
 registerRoute('/lancamentos', renderTransactions)
 boot()
