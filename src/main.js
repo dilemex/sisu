@@ -17,6 +17,12 @@ import { renderInstallments } from './pages/installments.js'
 import { renderRecurring } from './pages/recurring.js'
 import { renderPlanning } from './pages/planning.js'
 import { renderBudgets } from './pages/budgets.js'
+import { renderSettings } from './pages/settings.js'
+import { renderProfile } from './pages/settings-perfil.js'
+import { renderCategories } from './pages/settings-categories.js'
+import { renderAbout } from './pages/settings-about.js'
+import { renderReports } from './pages/reports.js'
+import { renderInsights } from './pages/insights.js'
 
 const app = document.querySelector('#app')
 
@@ -30,6 +36,12 @@ registerRoute('/recorrencias',   renderRecurring)
 registerRoute('/planejamento',   renderPlanning)
 registerRoute('/orcamentos',     renderBudgets)
 registerRoute('/mais',           renderMore)
+registerRoute('/relatorios',      renderReports)
+registerRoute('/diagnostico',     renderInsights)
+registerRoute('/config',          renderSettings)
+registerRoute('/config/perfil',   renderProfile)
+registerRoute('/config/categorias', renderCategories)
+registerRoute('/config/sobre',    renderAbout)
 
 supabase.auth.onAuthStateChange((_event, session) => {
   if (session) mostrarApp()
