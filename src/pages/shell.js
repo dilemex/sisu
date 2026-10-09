@@ -15,6 +15,8 @@ const NAV_ITENS = [
   { rota: '/mais',         icon: 'more',   label: 'Mais'         }
 ]
 
+const BASE = import.meta.env.BASE_URL || '/sisu/'
+
 export function renderAppShell(root) {
   root.innerHTML = `
     <div class="shell">
@@ -22,11 +24,8 @@ export function renderAppShell(root) {
         <div class="app-header-inner">
           <div class="app-header-topo">
             <div class="logo">
-              <svg class="logo-marca" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                <path d="M16 5 L28 26 L4 26 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M16 13 L22 26 L10 26 Z" fill="currentColor"/>
-              </svg>
-              <span class="logo-texto">SISU</span>
+              <img src="${BASE}logo/simbolo-branco.png" alt="" aria-hidden="true" />
+              <img src="${BASE}logo/wordmark-branco.png" alt="Sisu" class="logo-wordmark" />
             </div>
             <button class="avatar" data-ir="/mais" aria-label="Perfil">
               ${ICONS.user}

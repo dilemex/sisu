@@ -1,10 +1,9 @@
 import { getState } from '../lib/state.js'
 import {
-  getAccountBalances, getCardInvoices, getPeriodSummary,
-  getTopExpenseCategories, getUpcomingCardDue, getMonthEvolution
+  getAccountBalances, getPeriodSummary,
+  getUpcomingCardDue, getMonthEvolution
 } from '../lib/db/balances.js'
 import { listAccounts } from '../lib/db/accounts.js'
-import { listTransactions } from '../lib/db/transactions.js'
 import { formatBRL, escapeHtml } from '../lib/ui.js'
 import { navigate } from '../lib/router.js'
 import { supabase } from '../lib/supabase.js'
@@ -15,12 +14,20 @@ function intervalo(periodo) {
   const hoje = new Date()
   if (periodo === '30d') {
     const from = new Date(hoje); from.setDate(from.getDate() - 29)
-    return { from: from.toISOString().slice(0, 10), to: hoje.toISOString().slice(0, 10), label: 'Últimos 30 dias' }
+    return {
+      from: from.toISOString().slice(0, 10),
+      to: hoje.toISOString().slice(0, 10),
+      label: 'Últimos 30 dias'
+    }
   }
   const y = hoje.getFullYear(), m = hoje.getMonth() + 1
   const ym = `${y}-${String(m).padStart(2, '0')}`
   const ultimo = new Date(y, m, 0).getDate()
-  return { from: `${ym}-01`, to: `${ym}-${String(ultimo).padStart(2, '0')}`, label: 'Mês atual' }
+  return {
+    from: `${ym}-01`,
+    to: `${ym}-${String(ultimo).padStart(2, '0')}`,
+    label: 'Mês atual'
+  }
 }
 
 export async function renderDashboard(root) {
@@ -51,13 +58,6 @@ export async function renderDashboard(root) {
 
     root.innerHTML = `
       <section class="dash">
-        <div class="dash-seletor">
-          <button data-periodo="mes" class="${periodo === 'mes' ? 'ativo' : ''}">Mês atual</button>
-          <button data-periodo="30d" class="${periodo === '30d' ? 'ativo' : ''}">Últimos 30 dias</button>
-        </div>
-
-        ${alertas.length > 0 ? renderAlertas(alertas) : ''}
-
         <div class="dash-hero">
           <span class="dash-label">Saldo total em contas</span>
           <strong class="dash-valor-grande">${formatBRL(saldoContas)}</strong>
@@ -68,6 +68,13 @@ export async function renderDashboard(root) {
             taxa de sobra em ${label.toLowerCase()}
           </span>
         </div>
+
+        <div class="dash-seletor">
+          <button data-periodo="mes" class="${periodo === 'mes' ? 'ativo' : ''}">Mês atual</button>
+          <button data-periodo="30d" class="${periodo === '30d' ? 'ativo' : ''}">Últimos 30 dias</button>
+        </div>
+
+        ${alertas.length > 0 ? renderAlertas(alertas) : ''}
 
         <div class="dash-metricas">
           <div class="metrica-card">
@@ -134,7 +141,9 @@ export async function renderDashboard(root) {
         ${cartoes.map((c) => `
           <div class="alerta">
             ⚠️ <strong>${escapeHtml(c.name)}</strong>
-            ${c.diasParaVencer === 0 ? 'vence <strong>hoje</strong>' : `vence em <strong>${c.diasParaVencer} dia${c.diasParaVencer > 1 ? 's' : ''}</strong>`}
+            ${c.diasParaVencer === 0
+              ? 'vence <strong>hoje</strong>'
+              : `vence em <strong>${c.diasParaVencer} dia${c.diasParaVencer > 1 ? 's' : ''}</strong>`}
             (dia ${c.due_day})
           </div>
         `).join('')}
@@ -167,7 +176,6 @@ async function getProximosCompromissos(familyId) {
   const y = hoje.getFullYear(), m = hoje.getMonth()
   const ultimo = new Date(y, m + 1, 0).getDate()
   const diaHoje = hoje.getDate()
-  const limite = diaHoje + 15
 
   const out = []
 
