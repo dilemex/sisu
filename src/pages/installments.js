@@ -1,6 +1,7 @@
 import { listActiveInstallments, deleteInstallmentGroup } from '../lib/db/transactions.js'
 import { formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
+import { Icons } from '../lib/icons.js'
 
 export async function renderInstallments(root) {
   const { family } = getState()
@@ -46,7 +47,7 @@ export async function renderInstallments(root) {
 
   function item(g) {
     const onde = g.card?.name ?? g.account?.name ?? ''
-    const icone = g.category?.icon ?? '💳'
+    const icone = g.category?.icon ?? Icons.creditCard
     const nome = g.description || g.category?.name || 'Compra parcelada'
     return `
       <li class="item">

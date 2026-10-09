@@ -20,7 +20,8 @@ export function startRouter(container) {
     try {
       await handler(container)
     } catch (err) {
-      container.innerHTML = `<p class="erro">Erro: ${err.message}</p>`
+      console.error('[Sisu] erro ao renderizar', route, err)
+      container.innerHTML = `<p class="erro">Erro em ${route}: ${err.message}</p>`
     }
   }
   window.addEventListener('hashchange', render)

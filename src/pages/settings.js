@@ -2,11 +2,12 @@ import { signOut } from '../lib/auth.js'
 import { navigate } from '../lib/router.js'
 import { getState } from '../lib/state.js'
 import { escapeHtml } from '../lib/ui.js'
+import { Icons } from '../lib/icons.js'
 
 const ITENS = [
-  { rota: '/config/perfil',      icone: '👤', titulo: 'Meu perfil',       sub: 'Nome, membro logado' },
-  { rota: '/config/categorias',  icone: '🏷️', titulo: 'Categorias',        sub: 'Personalizar categorias' },
-  { rota: '/config/sobre',       icone: 'ℹ️', titulo: 'Sobre o Sisu',      sub: 'Versão, créditos, backup' }
+  { rota: '/config/perfil',      ic: 'user',  titulo: 'Meu perfil',   sub: 'Nome, membro logado' },
+  { rota: '/config/categorias',  ic: 'tag',   titulo: 'Categorias',   sub: 'Personalizar categorias' },
+  { rota: '/config/sobre',       ic: 'info',  titulo: 'Sobre o Sisu', sub: 'Versão, créditos, backup' }
 ]
 
 export async function renderSettings(root) {
@@ -28,12 +29,12 @@ export async function renderSettings(root) {
     <ul class="lista">
       ${ITENS.map((i) => `
         <li class="item item-clicavel" data-rota="${i.rota}">
-          <div class="item-icone">${i.icone}</div>
+          <div class="item-icone">${Icons[i.ic] ?? ''}</div>
           <div class="item-info">
             <div class="item-titulo">${i.titulo}</div>
             <div class="item-sub">${i.sub}</div>
           </div>
-          <div class="item-seta">›</div>
+          <div class="item-seta">${Icons.chevronRight}</div>
         </li>
       `).join('')}
     </ul>

@@ -2,6 +2,7 @@ import { listAccounts, createAccount, updateAccount, toggleAccountActive } from 
 import { getAccountBalances } from '../lib/db/balances.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
+import { Icons } from '../lib/icons.js'
 
 const TIPOS = [
   { valor: 'checking',   label: 'Conta corrente' },
@@ -71,9 +72,9 @@ export async function renderAccounts(root) {
         </div>
         <div class="item-valor ${saldo < 0 ? 'vermelho' : ''}">${formatBRL(saldo)}</div>
         <div class="item-acoes">
-          <button data-editar="${c.id}" title="Editar">✏️</button>
+          <button data-editar="${c.id}" title="Editar">${Icons.edit}</button>
           <button data-toggle="${c.id}" title="${c.is_active ? 'Desativar' : 'Reativar'}">
-            ${c.is_active ? '🗑️' : '↩️'}
+            ${c.is_active ? 'trash' : 'restore'}
           </button>
         </div>
       </li>

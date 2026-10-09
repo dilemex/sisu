@@ -2,6 +2,7 @@ import { listGoals, createGoal, updateGoal, deleteGoal, addContribution } from '
 import { listMembers } from '../lib/db/members.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
+import { Icons } from '../lib/icons.js'
 
 export async function renderGoals(root) {
   const { family, member } = getState()
@@ -59,8 +60,8 @@ export async function renderGoals(root) {
             </div>
           </div>
           <div class="item-acoes">
-            <button data-editar="${m.id}" title="Editar">✏️</button>
-            <button data-excluir="${m.id}" title="Excluir">🗑️</button>
+            <button data-editar="${m.id}" title="Editar">${Icons.edit}</button>
+            <button data-excluir="${m.id}" title="Excluir">${Icons.trash}</button>
           </div>
         </header>
 

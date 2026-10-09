@@ -70,7 +70,7 @@ export async function generateDueRecurrences(familyId) {
     .from('transactions')
     .select('recurring_id')
     .eq('family_id', familyId)
-    .eq('recurring_id', 'not.is.null') // filtra só recorrentes
+    .not('recurring_id', 'is', null)     // CORRETO
     .gte('date', `${ym}-01`)
     .lte('date', `${ym}-${String(ultimoDia).padStart(2, '0')}`)
   if (e2) throw e2

@@ -7,6 +7,7 @@ import { listAccounts } from '../lib/db/accounts.js'
 import { formatBRL, escapeHtml } from '../lib/ui.js'
 import { navigate } from '../lib/router.js'
 import { supabase } from '../lib/supabase.js'
+import { Icons } from '../lib/icons.js'
 
 const LS_KEY = 'sisu:dashboard:periodo'
 
@@ -192,7 +193,7 @@ async function getProximosCompromissos(familyId) {
     const diff = Math.round((data - hoje) / (1000 * 60 * 60 * 24))
     if (diff >= 0 && diff <= 15) {
       out.push({
-        icone: '💳',
+        icone: Icons.creditCard,      //
         titulo: `Fatura do cartão ${c.name}`,
         sub: data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
         valor: null,
@@ -215,7 +216,7 @@ async function getProximosCompromissos(familyId) {
     const diff = Math.round((data - hoje) / (1000 * 60 * 60 * 24))
     if (diff >= 0 && diff <= 15) {
       out.push({
-        icone: '📅',
+        icone: Icons.calendar,
         titulo: r.description,
         sub: data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
         valor: Number(r.amount),

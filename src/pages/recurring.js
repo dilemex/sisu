@@ -5,6 +5,7 @@ import { listCards } from '../lib/db/cards.js'
 import { listMembers } from '../lib/db/members.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
+import { Icons } from '../lib/icons.js'
 
 export async function renderRecurring(root) {
   const { family, member } = getState()
@@ -73,11 +74,11 @@ export async function renderRecurring(root) {
         </div>
         <div class="item-valor ${r.type === 'income' ? 'verde' : 'vermelho'}">${formatBRL(r.amount)}</div>
         <div class="item-acoes">
-          <button data-editar="${r.id}" title="Editar">✏️</button>
+          <button data-editar="${r.id}" title="Editar">${Icons.edit}</button>
           <button data-toggle="${r.id}" title="${r.is_active ? 'Pausar' : 'Retomar'}">
-            ${r.is_active ? '⏸️' : '▶️'}
+            ${r.is_active ? Icons.pause : Icons.play}
           </button>
-          <button data-excluir="${r.id}" title="Excluir">🗑️</button>
+          <button data-excluir="${r.id}" title="Excluir">${Icons.trash}</button>
         </div>
       </li>
     `

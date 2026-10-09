@@ -2,6 +2,7 @@ import { listBudgets, createBudget, updateBudget, deleteBudget, getCategorySpend
 import { listCategories } from '../lib/db/categories.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
+import { Icons } from '../lib/icons.js'
 
 function intervaloMesAtual() {
   const hoje = new Date()
@@ -85,8 +86,8 @@ export async function renderBudgets(root) {
             <strong>${escapeHtml(b.category?.name ?? '—')}</strong>
           </div>
           <div class="item-acoes">
-            <button data-editar="${b.id}" title="Editar">✏️</button>
-            <button data-excluir="${b.id}" title="Remover">🗑️</button>
+            <button data-editar="${b.id}" title="Editar">${Icons.edit}</button>
+            <button data-excluir="${b.id}" title="Remover">${Icons.trash}</button>
           </div>
         </header>
 

@@ -3,6 +3,7 @@ import { listAccounts } from '../lib/db/accounts.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
 import { getCardInvoices, getCardCommitted } from '../lib/db/balances.js'
+import { Icons } from '../lib/icons.js'
 
 export async function renderCards(root) {
   async function carregar() {
@@ -87,9 +88,9 @@ export async function renderCards(root) {
           ` : ''}
         </div>
         <div class="item-acoes">
-          <button data-editar="${c.id}" title="Editar">✏️</button>
+          <button data-editar="${c.id}" title="Editar">${Icons.edit}</button>
           <button data-toggle="${c.id}" title="${c.is_active ? 'Desativar' : 'Reativar'}">
-            ${c.is_active ? '🗑️' : '↩️'}
+            ${c.is_active ? 'trash' : 'restore'}
           </button>
         </div>
       </li>

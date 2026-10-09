@@ -4,6 +4,7 @@ import {
   archiveCategory, unarchiveCategory, deleteCategory, countCategoryUsage
 } from '../lib/db/categories.js'
 import { openModal, escapeHtml } from '../lib/ui.js'
+import { Icons } from '../lib/icons.js'
 
 export async function renderCategories(root) {
   const { family } = getState()
@@ -48,8 +49,8 @@ export async function renderCategories(root) {
                   <div class="item-sub">${c.type === 'income' ? 'Receita' : 'Despesa'}</div>
                 </div>
                 <div class="item-acoes">
-                  <button data-restaurar="${c.id}" title="Restaurar">↩️</button>
-                  <button data-excluir="${c.id}" title="Excluir de vez">🗑️</button>
+                  <button data-restaurar="${c.id}" title="Restaurar">>${Icons.restore}</button>
+                  <button data-excluir="${c.id}" title="Excluir de vez">>${Icons.trash}</button>
                 </div>
               </li>
             `).join('')}
@@ -114,8 +115,8 @@ export async function renderCategories(root) {
               </div>
               <div class="item-acoes">
                 <button data-adicionar-sub="${r.id}" title="Adicionar subcategoria">＋</button>
-                <button data-editar="${r.id}" title="Editar">✏️</button>
-                <button data-arquivar="${r.id}" title="Arquivar">📦</button>
+                <button data-editar="${r.id}" title="Editar">${Icons.edit}</button>
+                <button data-arquivar="${r.id}" title="Arquivar">${Icons.archive}</button>
               </div>
             </div>
             ${(porPai.get(r.id) ?? []).length > 0 ? `
@@ -126,8 +127,8 @@ export async function renderCategories(root) {
                       <div class="item-titulo">${escapeHtml(s.name)}</div>
                     </div>
                     <div class="item-acoes">
-                      <button data-editar="${s.id}" title="Editar">✏️</button>
-                      <button data-arquivar="${s.id}" title="Arquivar">📦</button>
+                      <button data-editar="${s.id}" title="Editar">${Icons.edit}</button>
+                      <button data-arquivar="${s.id}" title="Arquivar">${Icons.archive}</button>
                     </div>
                   </li>
                 `).join('')}

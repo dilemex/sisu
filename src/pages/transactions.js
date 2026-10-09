@@ -11,6 +11,7 @@ import { listCards } from '../lib/db/cards.js'
 import { listMembers } from '../lib/db/members.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
+import { Icons } from '../lib/icons.js'
   
   // ---------- Helpers de data ----------
   
@@ -144,7 +145,9 @@ import { getState } from '../lib/state.js'
     function item(t) {
       const sinal = t.type === 'income' ? '+' : '−'
       const cor = t.type === 'income' ? 'verde' : 'vermelho'
-      const icone = t.category?.icon ?? (t.type === 'income' ? '💰' : '💸')
+      const icone = t.category?.icon
+        ? t.category.icon
+        : (t.type === 'income' ? Icons.arrowUp : Icons.arrowDown)
       const nomeCat = t.category?.name ?? (t.type === 'income' ? 'Entrada' : 'Saída')
       const onde = t.account?.name ?? t.card?.name ?? ''
       return `
@@ -158,8 +161,8 @@ import { getState } from '../lib/state.js'
           </div>
           <div class="item-valor ${cor}">${sinal}${formatBRL(t.amount).replace('R$', '').trim()}</div>
           <div class="item-acoes">
-            <button data-editar="${t.id}" title="Editar">✏️</button>
-            <button data-excluir="${t.id}" title="Excluir">🗑️</button>
+            <button data-editar="${t.id}" title="Editar">${Icons.edit}</button>
+            <button data-excluir="${t.id}" title="Excluir">${Icons.trash}</button>
           </div>
         </li>
       `
