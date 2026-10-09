@@ -3,7 +3,8 @@ import { supabase } from '../supabase.js'
 const SELECT = `
   *,
   category:categories ( id, name, icon, type ),
-  account:accounts ( id, name ),
+  account:accounts!account_id ( id, name ),
+  account_to:accounts!account_to_id ( id, name ),
   card:credit_cards ( id, name ),
   member:family_members ( id, name )
 `
@@ -123,7 +124,7 @@ export async function listActiveInstallments(familyId) {
       id, amount, date, description,
       installment_group_id, installment_number, installment_total,
       card:credit_cards ( id, name ),
-      account:accounts ( id, name ),
+      account:accounts!account_id ( id, name ),
       category:categories ( id, name, icon )
     `)
     .eq('family_id', familyId)
@@ -153,4 +154,28 @@ export async function listActiveInstallments(familyId) {
     g.total_restante += Number(t.amount)
   }
   return [...grupos.values()].sort((a, b) => a.proxima_data.localeCompare(b.proxima_data))
+}
+
+export async function createTransfer(familyId, {
+  amount, date, description, account_from, account_to, member_id, notes
+}) {
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data, error } = await supabase
+    .from('transactions')
+    .insert({
+      family_id: familyId,
+      type: 'transfer',
+      amount: Number(amount),
+      date,
+      description: description?.trim() || null,
+      account_id: account_from,
+      account_to_id: account_to,
+      member_id: member_id || null,
+      notes: notes?.trim() || null,
+      created_by: user.id
+    })
+    .select(SELECT)
+    .single()
+  if (error) throw error
+  return data
 }

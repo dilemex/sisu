@@ -5,6 +5,7 @@ import {
   deleteTransaction,
   createInstallmentPurchase
 } from '../lib/db/transactions.js'
+import { navigate } from '../lib/router.js'
 import { listCategories } from '../lib/db/categories.js'
 import { listAccounts } from '../lib/db/accounts.js'
 import { listCards } from '../lib/db/cards.js'
@@ -74,8 +75,8 @@ import { Icons } from '../lib/icons.js'
       }
   
       root.innerHTML = `
-        <div class="pagina-cabecalho">
-          <h2>Lançamentos</h2>
+        <div style="display:flex;gap:.5rem">
+          <button id="transferir" class="botao-secundario">Transferir</button>
           <button id="novo" class="botao-primario">+ Novo</button>
         </div>
   
@@ -85,6 +86,7 @@ import { Icons } from '../lib/icons.js'
             <option value="">Tudo</option>
             <option value="income" ${estado.filtroTipo === 'income' ? 'selected' : ''}>Só entradas</option>
             <option value="expense" ${estado.filtroTipo === 'expense' ? 'selected' : ''}>Só saídas</option>
+            <option value="transfer" ${estado.filtroTipo === 'transfer' ? 'selected' : ''}>Transferências</option>
           </select>
         </div>
   
@@ -119,6 +121,7 @@ import { Icons } from '../lib/icons.js'
       `
   
       root.querySelector('#novo').onclick = () => abrirForm(null)
+      root.querySelector('#transferir').onclick = () => navigate('/transferencias')
       root.querySelector('#mes').onchange = (e) => {
         estado.mes = e.target.value || ymHoje()
         carregar()
@@ -143,6 +146,23 @@ import { Icons } from '../lib/icons.js'
     }
   
     function item(t) {
+      if (t.type === 'transfer') {
+        return `
+          <li class="item">
+            <div class="item-icone">${Icons.repeat}</div>
+            <div class="item-info">
+              <div class="item-titulo">
+                ${escapeHtml(t.account?.name ?? '?')} → ${escapeHtml(t.account_to?.name ?? '?')}
+              </div>
+              <div class="item-sub">Transferência${t.member ? ' · ' + escapeHtml(t.member.name) : ''}</div>
+            </div>
+            <div class="item-valor">${formatBRL(t.amount)}</div>
+            <div class="item-acoes">
+              <button data-excluir="${t.id}" title="Excluir">${Icons.trash}</button>
+            </div>
+          </li>
+        `
+      }
       const sinal = t.type === 'income' ? '+' : '−'
       const cor = t.type === 'income' ? 'verde' : 'vermelho'
       const icone = t.category?.icon

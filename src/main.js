@@ -23,6 +23,8 @@ import { renderCategories } from './pages/settings-categories.js'
 import { renderAbout } from './pages/settings-about.js'
 import { renderReports } from './pages/reports.js'
 import { renderInsights } from './pages/insights.js'
+import { renderTransfers } from './pages/transfers.js'
+import { renderExport } from './pages/settings-export.js'
 
 const app = document.querySelector('#app')
 
@@ -42,6 +44,7 @@ registerRoute('/config',          renderSettings)
 registerRoute('/config/perfil',   renderProfile)
 registerRoute('/config/categorias', renderCategories)
 registerRoute('/config/sobre',    renderAbout)
+registerRoute('/transferencias', renderTransfers)
 
 supabase.auth.onAuthStateChange((_event, session) => {
   if (session) mostrarApp()

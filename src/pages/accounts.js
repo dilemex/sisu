@@ -74,8 +74,8 @@ export async function renderAccounts(root) {
         <div class="item-acoes">
           <button data-editar="${c.id}" title="Editar">${Icons.edit}</button>
           <button data-toggle="${c.id}" title="${c.is_active ? 'Desativar' : 'Reativar'}">
-            ${c.is_active ? 'trash' : 'restore'}
-          </button>
+            ${c.is_active ? Icons.trash : Icons.restore}
+            </button>
         </div>
       </li>
     `

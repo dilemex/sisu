@@ -8,20 +8,43 @@ import { supabase } from '../supabase.js'
 export async function getAccountBalances(familyId) {
   const { data, error } = await supabase
     .from('transactions')
-    .select('type, amount, account_id')
+    .select('type, amount, account_id, account_to_id')
     .eq('family_id', familyId)
-    .not('account_id', 'is', null)
   if (error) throw error
 
-  const deltaPorConta = {}
+  const delta = {}
   for (const t of data) {
-    if (!t.account_id) continue
-    deltaPorConta[t.account_id] ??= 0
-    deltaPorConta[t.account_id] += t.type === 'income'
-      ? Number(t.amount)
-      : -Number(t.amount)
+    const v = Number(t.amount)
+    if (t.type === 'income' && t.account_id) {
+      delta[t.account_id] = (delta[t.account_id] ?? 0) + v
+    } else if (t.type === 'expense' && t.account_id) {
+      delta[t.account_id] = (delta[t.account_id] ?? 0) - v
+    } else if (t.type === 'transfer') {
+      if (t.account_id)    delta[t.account_id]    = (delta[t.account_id] ?? 0) - v
+      if (t.account_to_id) delta[t.account_to_id] = (delta[t.account_to_id] ?? 0) + v
+    }
   }
-  return deltaPorConta
+  return delta
+}
+/**
+ * Resumo do período: total entradas, saídas e saldo.
+ */
+export async function getPeriodSummary(familyId, { from, to }) {
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('type, amount')
+    .eq('family_id', familyId)
+    .neq('type', 'transfer')
+    .gte('date', from)
+    .lte('date', to)
+  if (error) throw error
+
+  let receitas = 0, despesas = 0
+  for (const t of data) {
+    if (t.type === 'income') receitas += Number(t.amount)
+    else despesas += Number(t.amount)
+  }
+  return { receitas, despesas, saldo: receitas - despesas }
 }
 
 /**
@@ -47,26 +70,6 @@ export async function getCardInvoices(familyId, { from, to }) {
   }
   return porCartao
 }
-/**
- * Resumo do período: total entradas, saídas e saldo.
- */
-export async function getPeriodSummary(familyId, { from, to }) {
-  const { data, error } = await supabase
-    .from('transactions')
-    .select('type, amount')
-    .eq('family_id', familyId)
-    .gte('date', from)
-    .lte('date', to)
-  if (error) throw error
-
-  let receitas = 0, despesas = 0
-  for (const t of data) {
-    if (t.type === 'income') receitas += Number(t.amount)
-    else despesas += Number(t.amount)
-  }
-  return { receitas, despesas, saldo: receitas - despesas }
-}
-
 /**
  * Top N categorias de despesa no período.
  * Retorna [{ category, total }, ...] ordenado desc.

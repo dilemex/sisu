@@ -11,6 +11,7 @@ const ITENS = [
   { rota: '/recorrencias',  ic: 'repeat',     titulo: 'Recorrências',  sub: 'Salário, aluguel, assinaturas' },
   { rota: '/parcelamentos', ic: 'receipt',    titulo: 'Parcelamentos', sub: 'Compras parceladas em aberto' },
   { rota: '/lancamentos',   ic: 'list',       titulo: 'Lançamentos',   sub: 'Histórico completo' },
+  { rota: '/transferencias', ic: 'repeat', titulo: 'Transferências', sub: 'Movimentar entre contas' },
   { rota: '/contas',        ic: 'bank',       titulo: 'Contas',        sub: 'Saldos e cadastro' },
   { rota: '/cartoes',       ic: 'creditCard', titulo: 'Cartões',       sub: 'Faturas e limites' },
   { rota: '/config',        ic: 'settings',   titulo: 'Configurações', sub: 'Perfil, categorias, backup' }
