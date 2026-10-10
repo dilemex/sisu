@@ -23,10 +23,10 @@ export function renderAppShell(root) {
       <header class="app-header">
         <div class="app-header-inner">
           <div class="app-header-topo">
-            <div class="logo">
+            <button class="logo">
               <img src="${BASE}logo/simbolo-branco.png" alt="" aria-hidden="true" />
               <img src="${BASE}logo/wordmark-branco.png" alt="Sisu" class="logo-wordmark" />
-            </div>
+            </button>
             <button class="avatar" data-ir="/mais" aria-label="Perfil">
               ${ICONS.user}
             </button>
@@ -49,6 +49,7 @@ export function renderAppShell(root) {
   `
 
   root.querySelector('.avatar').onclick = () => navigate('/mais')
+  root.querySelector('.logo').onclick = () => navigate('/')
 
   const links = root.querySelectorAll('.bottom-nav a')
   function atualizarAtivo() {

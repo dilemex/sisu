@@ -54,17 +54,31 @@ button { font-family: inherit; }
   display: flex;
   align-items: center;
   gap: .55rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #fff;
+  font-family: inherit;
+  transition: opacity .15s;
 }
+.logo:hover { opacity: .85; }
+.logo:active { transform: scale(.98); }
 .logo img {
   display: block;
   height: 1.85rem;
   width: auto;
 }
 .logo-wordmark {
-  display: block;
-  height: 1rem;
-  width: auto;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #fff;
+  font-family: inherit;
+  transition: opacity .15s;
 }
+
 /* Login logo */
 .login-logo {
   display: flex;

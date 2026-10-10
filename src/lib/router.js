@@ -1,4 +1,5 @@
 const routes = new Map()
+let initialized = false
 
 export function registerRoute(path, handler) {
   routes.set(path, handler)
@@ -9,6 +10,7 @@ export function getCurrentRoute() {
 }
 
 export function navigate(path) {
+  if (getCurrentRoute() === path) return
   window.location.hash = path
 }
 
@@ -24,6 +26,11 @@ export function startRouter(container) {
       container.innerHTML = `<p class="erro">Erro em ${route}: ${err.message}</p>`
     }
   }
-  window.addEventListener('hashchange', render)
+
+  // ⚠️ Só registra o listener UMA vez na vida do app
+  if (!initialized) {
+    window.addEventListener('hashchange', render)
+    initialized = true
+  }
   render()
 }

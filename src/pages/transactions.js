@@ -10,6 +10,7 @@ import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
 import { Icons } from '../lib/icons.js'
 import { navigate } from '../lib/router.js'
+import { cached, invalidate } from '../lib/cache.js'
 
 // ---------- Helpers de data ----------
 
@@ -36,10 +37,10 @@ export async function renderTransactions(root) {
   const { family, member } = getState()
 
   const [categorias, contas, cartoes, membros] = await Promise.all([
-    listCategories(family.id),
-    listAccounts(family.id),
-    listCards(family.id),
-    listMembers(family.id)
+    cached(`cat:${family.id}`, () => listCategories(family.id)),
+    cached(`acc:${family.id}`, () => listAccounts(family.id)),
+    cached(`card:${family.id}`, () => listCards(family.id)),
+    cached(`mem:${family.id}`, () => listMembers(family.id))
   ])
 
   const estado = {
