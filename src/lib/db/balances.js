@@ -194,3 +194,48 @@ export async function getMonthEvolution(familyId, months = 6) {
   }
   return out
 }
+
+/**
+ * Retorna dois mapas por conta:
+ *   { atual: {...}, projetado: {...} }
+ * atual = só transações até hoje
+ * projetado = todas (inclui futuras)
+ */
+export async function getAccountBalancesDetailed(familyId) {
+  const hoje = new Date().toISOString().slice(0, 10)
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('type, amount, account_id, account_to_id, date')
+    .eq('family_id', familyId)
+  if (error) throw error
+
+  const atual = {}
+  const projetado = {}
+
+  const add = (map, id, v) => {
+    if (!id) return
+    map[id] = (map[id] ?? 0) + v
+  }
+
+  for (const t of data) {
+    const v = Number(t.amount)
+    const isPast = t.date <= hoje
+
+    if (t.type === 'income') {
+      add(projetado, t.account_id, v)
+      if (isPast) add(atual, t.account_id, v)
+    } else if (t.type === 'expense') {
+      add(projetado, t.account_id, -v)
+      if (isPast) add(atual, t.account_id, -v)
+    } else if (t.type === 'transfer') {
+      add(projetado, t.account_id, -v)
+      add(projetado, t.account_to_id, v)
+      if (isPast) {
+        add(atual, t.account_id, -v)
+        add(atual, t.account_to_id, v)
+      }
+    }
+  }
+
+  return { atual, projetado }
+}

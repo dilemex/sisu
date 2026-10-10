@@ -1,5 +1,5 @@
 import { listAccounts, createAccount, updateAccount, toggleAccountActive } from '../lib/db/accounts.js'
-import { getAccountBalances } from '../lib/db/balances.js'
+import { getAccountBalancesDetailed } from '../lib/db/balances.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
 import { getState } from '../lib/state.js'
 import { Icons } from '../lib/icons.js'
@@ -21,12 +21,19 @@ export async function renderAccounts(root) {
 
     const [contas, deltas] = await Promise.all([
       listAccounts(family.id),
-      getAccountBalances(family.id)
+      getAccountBalancesDetailed(family.id)
     ])
 
-    const total = contas
-      .filter((c) => c.is_active)
-      .reduce((s, c) => s + Number(c.initial_balance) + (deltas[c.id] ?? 0), 0)
+    let totalAtual = 0
+    let totalProjetado = 0
+    for (const c of contas) {
+      if (!c.is_active) continue
+      const base = Number(c.initial_balance)
+      totalAtual += base + (deltas.atual[c.id] ?? 0)
+      totalProjetado += base + (deltas.projetado[c.id] ?? 0)
+    }
+
+    const temProjecao = Math.abs(totalProjetado - totalAtual) > 0.01
 
     root.innerHTML = `
       <div class="pagina-cabecalho">
@@ -35,13 +42,18 @@ export async function renderAccounts(root) {
       </div>
 
       <div class="saldo-total">
-        <span class="label">Saldo total</span>
-        <strong>${formatBRL(total)}</strong>
+        <span class="label">Saldo total hoje</span>
+        <strong>${formatBRL(totalAtual)}</strong>
+        ${temProjecao ? `
+          <span class="saldo-projetado">
+            → ${formatBRL(totalProjetado)} após lançamentos futuros
+          </span>
+        ` : ''}
       </div>
 
       ${contas.length === 0
         ? `<p class="vazio">Nenhuma conta cadastrada ainda.</p>`
-        : `<ul class="lista">${contas.map((c) => item(c, deltas[c.id] ?? 0)).join('')}</ul>`}
+        : `<ul class="lista">${contas.map((c) => item(c, deltas)).join('')}</ul>`}
     `
 
     root.querySelector('#nova').onclick = () => abrirForm(null, carregar)
@@ -57,10 +69,15 @@ export async function renderAccounts(root) {
     })
   }
 
-  function item(c, delta) {
-    const saldo = Number(c.initial_balance) + delta
+  function item(c, deltas) {
+    const base = Number(c.initial_balance)
+    const atual = base + (deltas.atual[c.id] ?? 0)
+    const projetado = base + (deltas.projetado[c.id] ?? 0)
+    const temProjecao = Math.abs(projetado - atual) > 0.01
+    const deltaFuturo = projetado - atual
+
     return `
-      <li class="item ${c.is_active ? '' : 'inativo'}">
+      <li class="item item-conta ${c.is_active ? '' : 'inativo'}">
         <div class="item-info">
           <div class="item-titulo">
             ${escapeHtml(c.name)}
@@ -70,12 +87,19 @@ export async function renderAccounts(root) {
             ${labelTipo(c.type)}${c.institution ? ' · ' + escapeHtml(c.institution) : ''}
           </div>
         </div>
-        <div class="item-valor ${saldo < 0 ? 'vermelho' : ''}">${formatBRL(saldo)}</div>
+        <div class="item-valor item-valor-conta">
+          <div class="saldo-atual ${atual < 0 ? 'vermelho' : ''}">${formatBRL(atual)}</div>
+          ${temProjecao ? `
+            <div class="saldo-futuro ${deltaFuturo >= 0 ? 'verde' : 'vermelho'}">
+              ${deltaFuturo >= 0 ? '↑' : '↓'} ${formatBRL(projetado)} projetado
+            </div>
+          ` : ''}
+        </div>
         <div class="item-acoes">
           <button data-editar="${c.id}" title="Editar">${Icons.edit}</button>
           <button data-toggle="${c.id}" title="${c.is_active ? 'Desativar' : 'Reativar'}">
             ${c.is_active ? Icons.trash : Icons.restore}
-            </button>
+          </button>
         </div>
       </li>
     `

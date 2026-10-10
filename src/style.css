@@ -1080,3 +1080,32 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   color: var(--texto-fraco);
   font-style: italic;
 }
+/* ============ Saldo projetado (Contas) ============ */
+.saldo-total .saldo-projetado {
+  display: block;
+  margin-top: .5rem;
+  font-size: .85rem;
+  opacity: .85;
+  font-weight: 500;
+}
+
+.item-conta { align-items: center; }
+
+.item-valor-conta {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+}
+
+.saldo-atual {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.saldo-futuro {
+  font-size: .72rem;
+  font-weight: 500;
+  opacity: .8;
+  font-variant-numeric: tabular-nums;
+}
