@@ -30,13 +30,18 @@ export async function getAccountBalances(familyId) {
  * Resumo do período: total entradas, saídas e saldo.
  */
 export async function getPeriodSummary(familyId, { from, to }) {
+  // Cap em hoje: ignora lançamentos futuros
+  const hoje = new Date().toISOString().slice(0, 10)
+  const effectiveTo = to > hoje ? hoje : to
+
   const { data, error } = await supabase
     .from('transactions')
     .select('type, amount')
     .eq('family_id', familyId)
     .neq('type', 'transfer')
+    .not('account_id', 'is', null)   // só conta — cartão fica fora
     .gte('date', from)
-    .lte('date', to)
+    .lte('date', effectiveTo)
   if (error) throw error
 
   let receitas = 0, despesas = 0

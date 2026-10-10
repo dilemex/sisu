@@ -82,14 +82,14 @@ export async function renderDashboard(root) {
             <div class="metrica-topo">
               <div class="metrica-icone entrada">↑</div>
             </div>
-            <span class="dash-label">Entradas</span>
+            <span class="dash-label">Entradas (contas)</span>
             <strong class="dash-valor">${formatBRL(resumo.receitas)}</strong>
           </div>
           <div class="metrica-card">
             <div class="metrica-topo">
               <div class="metrica-icone saida">↓</div>
             </div>
-            <span class="dash-label">Saídas</span>
+            <span class="dash-label">Saídas (contas)</span>
             <strong class="dash-valor">${formatBRL(resumo.despesas)}</strong>
           </div>
         </div>

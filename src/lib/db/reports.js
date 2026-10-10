@@ -71,12 +71,17 @@ export async function getReportMonthly(familyId, months = 6) {
  * Taxa de sobra = (receitas - despesas) / receitas, no período.
  */
 export async function getSavingsRate(familyId, { from, to }) {
+  const hoje = new Date().toISOString().slice(0, 10)
+  const effectiveTo = to > hoje ? hoje : to
+
   const { data, error } = await supabase
     .from('transactions')
     .select('type, amount')
     .eq('family_id', familyId)
+    .neq('type', 'transfer')
+    .not('account_id', 'is', null)
     .gte('date', from)
-    .lte('date', to)
+    .lte('date', effectiveTo)
   if (error) throw error
 
   let r = 0, d = 0

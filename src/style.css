@@ -1015,3 +1015,68 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   color: var(--texto-suave);
   font-weight: 500;
 }
+.info-fatura {
+  font-size: .82rem;
+  color: var(--texto-suave);
+  background: var(--card-suave);
+  padding: .65rem .85rem;
+  border-radius: .5rem;
+  margin: -.75rem 0 1.25rem;
+  border-left: 3px solid var(--verde-claro);
+}
+.info-fatura strong { color: var(--verde-profundo); }
+.dica-inline { opacity: .75; font-size: .78rem; }
+/* ============ Lançamentos futuros ============ */
+.futuros-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px dashed var(--borda-forte);
+}
+
+.futuros-toggle {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  width: 100%;
+  padding: .75rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--card-suave);
+  color: var(--texto-suave);
+  border: 1px dashed var(--borda-forte);
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  text-align: left;
+}
+.futuros-toggle:hover {
+  background: var(--card);
+  color: var(--texto);
+  opacity: 1;
+  border-style: solid;
+}
+.futuros-icone {
+  font-size: .8rem;
+  width: .8rem;
+  display: inline-flex;
+  justify-content: center;
+}
+.futuros-chevron {
+  margin-left: auto;
+  color: var(--verde-medio);
+  font-weight: 600;
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.futuros-conteudo {
+  margin-top: 1rem;
+  padding-left: .5rem;
+  opacity: .85;
+}
+.futuros-conteudo .dia { margin-bottom: 1.25rem; }
+.futuros-conteudo .dia-titulo {
+  color: var(--texto-fraco);
+  font-style: italic;
+}
