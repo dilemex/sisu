@@ -8,7 +8,8 @@ const ITENS = [
   { rota: '/config/perfil',      ic: 'user',     titulo: 'Meu perfil',          sub: 'Nome, membro logado' },
   { rota: '/config/categorias',  ic: 'tag',      titulo: 'Categorias',          sub: 'Personalizar categorias' },
   { rota: '/config/export',      ic: 'receipt',  titulo: 'Backup e exportação', sub: 'CSV e JSON dos seus dados' },
-  { rota: '/config/sobre',       ic: 'info',     titulo: 'Sobre o Sisu',        sub: 'Versão, créditos, backup' }
+  { rota: '/config/sobre',       ic: 'info',     titulo: 'Sobre o Sisu',        sub: 'Versão, créditos, backup' },
+  { rota: '/importar-imagem', ic: 'receipt', titulo: 'Importar de imagem', sub: 'Print do extrato → lançamentos' },
 ]
 
 export async function renderSettings(root) {

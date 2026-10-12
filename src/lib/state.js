@@ -7,3 +7,14 @@ export function setState(patch) {
 export function getState() {
   return _state
 }
+let _pendingNewTransaction = false
+
+export function setPendingNewTransaction(v) {
+  _pendingNewTransaction = v
+}
+
+export function consumePendingNewTransaction() {
+  const v = _pendingNewTransaction
+  _pendingNewTransaction = false
+  return v
+}

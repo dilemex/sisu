@@ -1,13 +1,13 @@
-import { getState } from '../lib/state.js'
+import { getState, setPendingNewTransaction } from '../lib/state.js'
+import { Icons } from '../lib/icons.js'
+import { navigate } from '../lib/router.js'
 import {
   getAccountBalances, getPeriodSummary,
   getUpcomingCardDue, getMonthEvolution
 } from '../lib/db/balances.js'
 import { listAccounts } from '../lib/db/accounts.js'
 import { formatBRL, escapeHtml } from '../lib/ui.js'
-import { navigate } from '../lib/router.js'
 import { supabase } from '../lib/supabase.js'
-import { Icons } from '../lib/icons.js'
 
 const LS_KEY = 'sisu:dashboard:periodo'
 
@@ -134,6 +134,19 @@ export async function renderDashboard(root) {
     root.querySelectorAll('[data-ir]').forEach((b) => {
       b.onclick = () => navigate(b.dataset.ir)
     })
+        // FAB "+ Novo"
+        const fab = document.createElement('button')
+        fab.className = 'fab'
+        fab.setAttribute('aria-label', 'Novo lançamento')
+        fab.innerHTML = Icons.plus
+        fab.onclick = () => {
+          setPendingNewTransaction(true)
+          navigate('/lancamentos')
+        }
+        document.body.appendChild(fab)
+    
+        // Remove o FAB ao sair da página
+        window.addEventListener('hashchange', () => fab.remove(), { once: true })
   }
 
   function renderAlertas(cartoes) {

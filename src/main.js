@@ -4,7 +4,7 @@ import { getCurrentMember } from './lib/auth.js'
 import { setState } from './lib/state.js'
 import { registerRoute } from './lib/router.js'
 import { generateDueRecurrences } from './lib/db/recurring.js'
-
+import { renderImportImage } from './pages/import-image.js'
 import { renderLogin } from './pages/login.js'
 import { renderAppShell } from './pages/shell.js'
 import { renderDashboard } from './pages/dashboard.js'
@@ -49,16 +49,20 @@ registerRoute('/config/perfil',     renderProfile)
 registerRoute('/config/categorias', renderCategories)
 registerRoute('/config/sobre',      renderAbout)
 registerRoute('/config/export',     renderExport)
+registerRoute('/importar-imagem', renderImportImage)
 registerRoute('/mais',              renderMore)
 
 // ---- Auth ----
 supabase.auth.onAuthStateChange((_event, session) => {
   if (!session) {
-    // logout real (ou token expirado)
+    // logout
     membroAtual = null
     mostrarLogin()
+  } else if (!membroAtual) {
+    // login novo — monta o shell
+    mostrarApp()
   }
-  // login e refresh de token são tratados pelo boot() / pela flag membroAtual
+  // token refresh: sessão chega com membroAtual já setado → não faz nada
 })
 
 async function mostrarLogin() {

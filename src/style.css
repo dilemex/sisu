@@ -70,13 +70,8 @@ button { font-family: inherit; }
   width: auto;
 }
 .logo-wordmark {
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  color: #fff;
-  font-family: inherit;
-  transition: opacity .15s;
+  height: 1rem;
+  width: auto;
 }
 
 /* Login logo */
@@ -1122,4 +1117,70 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   font-weight: 500;
   opacity: .8;
   font-variant-numeric: tabular-nums;
+}
+/* ============ FAB (floating action button) ============ */
+.fab {
+  position: fixed;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 1rem);
+  right: 1.25rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: var(--verde-profundo);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(20,52,43,.35);
+  z-index: 40;
+  padding: 0;
+  border: none;
+  transition: transform .15s, box-shadow .15s;
+}
+.fab:hover { transform: scale(1.05); box-shadow: 0 8px 24px rgba(20,52,43,.45); }
+.fab:active { transform: scale(.95); }
+.fab svg { width: 1.5rem; height: 1.5rem; }
+/* ============ Ocultar valores ============ */
+.header-acoes {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.icone-header {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255,255,255,.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  transition: background .15s;
+}
+.icone-header:hover { background: rgba(255,255,255,.12); opacity: 1; }
+.icone-header svg { width: 1.15rem; height: 1.15rem; }
+
+/* Blur em todos os elementos com valor */
+.hide-values .dash-valor-grande,
+.hide-values .dash-valor,
+.hide-values .item-valor,
+.hide-values .saldo-atual,
+.hide-values .saldo-futuro,
+.hide-values .saldo-total strong,
+.hide-values .valor-grande,
+.hide-values .bar-valor,
+.hide-values .budget-metricas,
+.hide-values .meta-valores strong,
+.hide-values .resumo-mes strong,
+.hide-values .resumo-duplo strong,
+.hide-values .breakdown strong,
+.hide-values .fatura,
+.hide-values .saldo-projetado {
+  filter: blur(7px);
+  user-select: none;
+  pointer-events: none;
+  transition: filter .2s;
 }

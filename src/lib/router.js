@@ -33,4 +33,4 @@ export function startRouter(container) {
     initialized = true
   }
   render()
-}
+} 

@@ -7,10 +7,10 @@ import { listAccounts } from '../lib/db/accounts.js'
 import { listCards } from '../lib/db/cards.js'
 import { listMembers } from '../lib/db/members.js'
 import { openModal, formatBRL, escapeHtml } from '../lib/ui.js'
-import { getState } from '../lib/state.js'
 import { Icons } from '../lib/icons.js'
 import { navigate } from '../lib/router.js'
 import { cached, invalidate } from '../lib/cache.js'
+import { getState, consumePendingNewTransaction } from '../lib/state.js'
 
 // ---------- Helpers de data ----------
 
@@ -462,4 +462,7 @@ export async function renderTransactions(root) {
   }
 
   await carregar()
+  if (consumePendingNewTransaction()) {
+    abrirForm(null)
+  }
 }
