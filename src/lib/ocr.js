@@ -1,24 +1,77 @@
 import { createWorker } from 'tesseract.js'
 
 /**
+ * Pré-processa a imagem: escala 2x, converte pra preto-e-branco,
+ * inverte se estiver em modo escuro, e aplica threshold.
+ */
+async function preprocessImage(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const scale = 2 // upscale ajuda muito o Tesseract
+        canvas.width = img.width * scale
+        canvas.height = img.height * scale
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+  
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        const data = imageData.data
+  
+        // Detecta se é modo escuro (média de brilho baixa)
+        let soma = 0
+        const amostras = Math.min(data.length / 4, 5000)
+        for (let i = 0; i < amostras; i++) {
+          const idx = i * 4
+          soma += (data[idx] + data[idx + 1] + data[idx + 2]) / 3
+        }
+        const isDark = (soma / amostras) < 128
+  
+        for (let i = 0; i < data.length; i += 4) {
+          let gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114
+          if (isDark) gray = 255 - gray
+          // Threshold: > 140 vira branco puro, < vira cinza escuro
+          gray = gray > 140 ? 255 : Math.max(0, gray * 0.3)
+          data[i] = data[i + 1] = data[i + 2] = gray
+        }
+  
+        ctx.putImageData(imageData, 0, 0)
+        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Falha no processamento')), 'image/png')
+      }
+      img.onerror = () => reject(new Error('Imagem inválida'))
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+/**
  * Roda OCR na imagem e devolve o texto bruto reconhecido.
  * onProgress recebe { status, progress } (0..1).
  */
 export async function extrairTexto(imageFile, onProgress) {
-  const worker = await createWorker('por+eng', 1, {
-    logger: (m) => {
-      if (onProgress && typeof m.progress === 'number') {
-        onProgress(m.status, m.progress)
+    // 1. Pré-processa
+    const processed = await preprocessImage(imageFile)
+  
+    // 2. Cria worker
+    const worker = await createWorker('por+eng', 1, {
+      logger: (m) => {
+        if (onProgress && typeof m.progress === 'number') {
+          onProgress(m.status, m.progress)
+        }
       }
+    })
+  
+    try {
+      // 3. PSM 6 = assume bloco uniforme de texto (bom pra extratos)
+      await worker.setParameters({
+        tessedit_pageseg_mode: '6',
+        preserve_interword_spaces: '1'
+      })
+      const { data: { text } } = await worker.recognize(processed)
+      return text
+    } finally {
+      await worker.terminate()
     }
-  })
-  try {
-    const { data: { text } } = await worker.recognize(imageFile)
-    return text
-  } finally {
-    await worker.terminate()
   }
-}
 
 /**
  * Tenta extrair transações do texto reconhecido.

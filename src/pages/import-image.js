@@ -22,6 +22,8 @@ export async function renderImportImage(root) {
 
   let candidatos = []
   let status = ''
+  let textoBruto = ''   // ← NOVO
+  
 
   function render() {
     root.innerHTML = `
@@ -33,6 +35,13 @@ export async function renderImportImage(root) {
         Envie um print do extrato do banco ou do cartão. O Sisu tenta ler
         os lançamentos. <strong>Revise sempre antes de salvar</strong> — OCR não é 100% preciso.
       </p>
+
+            ${textoBruto ? `
+        <details class="texto-bruto">
+          <summary>Ver texto bruto do OCR</summary>
+          <pre>${escapeHtml(textoBruto)}</pre>
+        </details>
+      ` : ''}
 
       <div class="upload-box" id="drop">
         <input type="file" id="file" accept="image/*" hidden />
@@ -146,6 +155,7 @@ export async function renderImportImage(root) {
         const el = root.querySelector('.upload-status')
         if (el) el.textContent = status
       })
+      textoBruto = texto  // ← guarda
 
       const encontrados = parseTransacoes(texto)
 

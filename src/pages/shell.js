@@ -77,5 +77,5 @@ eyeBtn.onclick = () => {
   window.addEventListener('hashchange', atualizarAtivo)
   atualizarAtivo()
 
-  startRouter(document.querySelector('#main'))
+  startRouter()
 }

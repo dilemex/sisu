@@ -1184,3 +1184,28 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   pointer-events: none;
   transition: filter .2s;
 }
+.texto-bruto {
+  background: var(--card-suave);
+  border-radius: .5rem;
+  padding: .5rem .75rem;
+  margin-bottom: 1rem;
+  font-size: .8rem;
+}
+.texto-bruto summary {
+  cursor: pointer;
+  color: var(--texto-suave);
+  font-weight: 500;
+}
+.texto-bruto pre {
+  margin: .75rem 0 .25rem;
+  padding: .75rem;
+  background: var(--card);
+  border-radius: .4rem;
+  max-height: 240px;
+  overflow: auto;
+  font-size: .72rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--texto);
+}

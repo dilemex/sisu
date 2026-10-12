@@ -1,5 +1,6 @@
 const routes = new Map()
 let initialized = false
+let renderToken = 0   // identifica o render atual
 
 export function registerRoute(path, handler) {
   routes.set(path, handler)
@@ -14,23 +15,36 @@ export function navigate(path) {
   window.location.hash = path
 }
 
-export function startRouter(container) {
-  async function render() {
-    const route = getCurrentRoute()
-    const handler = routes.get(route) || routes.get('/')
-    container.innerHTML = ''
-    try {
-      await handler(container)
-    } catch (err) {
-      console.error('[Sisu] erro ao renderizar', route, err)
-      container.innerHTML = `<p class="erro">Erro em ${route}: ${err.message}</p>`
-    }
-  }
+export async function render() {
+  const token = ++renderToken        // este render ganha um token único
+  const route = getCurrentRoute()
+  const handler = routes.get(route) || routes.get('/')
 
-  // ⚠️ Só registra o listener UMA vez na vida do app
+  const target = document.querySelector('#main')
+  if (!target) return
+
+  target.innerHTML = ''
+
+  try {
+    await handler(target)
+    // Se outra navegação começou depois desta, ignora o resultado
+    if (token !== renderToken) return
+  } catch (err) {
+    if (token !== renderToken) return
+    console.error('[Sisu] erro ao renderizar', route, err)
+    target.innerHTML = `<p class="erro">Erro em ${route}: ${err.message}</p>`
+  }
+}
+
+export function startRouter() {
   if (!initialized) {
-    window.addEventListener('hashchange', render)
+    window.addEventListener('hashchange', () => {
+      // Cancela qualquer render em vôo
+      renderToken++
+      // Pequeno delay pra consolidar cliques rápidos
+      setTimeout(render, 0)
+    })
     initialized = true
   }
   render()
-} 
+}
