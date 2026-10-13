@@ -87,13 +87,15 @@ export function parseTransacoes(texto) {
   const candidatos = []
   const ano = new Date().getFullYear()
 
-  // Padrões
   const reData = /\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/
   const reValor = /(?:R\$\s*)?(-?\d{1,3}(?:\.\d{3})*,\d{2})/g
+  // Parcela: "1 de 2", "1/2", "1/02", "(1/2)" — exige contexto
+  const reParcela = /(?:\(|\s|^)(\d{1,2})\s*(?:de|\/)\s*(\d{1,2})(?:\)|\s|$)/i
 
   for (const linha of linhas) {
     const mData = linha.match(reData)
     if (!mData) continue
+    if (/-\s*R?\$?\s*\d/.test(linha)) continue
 
     const valores = [...linha.matchAll(reValor)].map((m) => m[1])
     if (valores.length === 0) continue
@@ -101,23 +103,33 @@ export function parseTransacoes(texto) {
     const dia = mData[1].padStart(2, '0')
     const mes = mData[2].padStart(2, '0')
     const anoTxt = mData[3]
-    let anoFinal = ano
-    if (anoTxt) {
-      anoFinal = anoTxt.length === 2 ? `20${anoTxt}` : anoTxt
-    }
+    const anoFinal = anoTxt
+      ? (anoTxt.length === 2 ? `20${anoTxt}` : anoTxt)
+      : String(ano)
 
-    // Valor: pega o maior (geralmente é o da transação, não o saldo)
     const valorStr = valores[valores.length - 1]
     const valorNum = Number(valorStr.replace(/\./g, '').replace(',', '.'))
     if (!Number.isFinite(valorNum) || valorNum === 0) continue
 
-    // Heurística pra sinal: se a linha tem "-" antes do valor, é despesa
-    const isNeg = /-\s*R?\$?\s*\d/.test(linha)
+    // ⭐ Remove a data (e o valor) da linha ANTES de buscar parcela
+    const linhaSemData = linha.replace(reData, '  ').replace(reValor, '  ')
+    const mParcela = linhaSemData.match(reParcela)
 
-    // Descrição: tira data, valores e deixa o resto
+    let parcelaAtual = null
+    let parcelaTotal = null
+    if (mParcela) {
+      const a = Number(mParcela[1])
+      const b = Number(mParcela[2])
+      if (a >= 1 && b >= 2 && a <= b) {
+        parcelaAtual = a
+        parcelaTotal = b
+      }
+    }
+
     let descricao = linha
       .replace(reData, '')
       .replace(reValor, '')
+      .replace(reParcela, ' ')
       .replace(/R\$\s*/g, '')
       .replace(/\s+/g, ' ')
       .replace(/^[\s\-–—:]+|[\s\-–—:]+$/g, '')
@@ -129,7 +141,9 @@ export function parseTransacoes(texto) {
       data: `${anoFinal}-${mes}-${dia}`,
       valor: Math.abs(valorNum),
       descricao: descricao || 'Lançamento importado',
-      tipo: isNeg ? 'expense' : (valorNum > 0 && !isNeg ? 'expense' : 'expense')
+      tipo: 'expense',
+      parcela_atual: parcelaAtual,
+      parcela_total: parcelaTotal
     })
   }
 

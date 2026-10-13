@@ -1209,3 +1209,29 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   word-break: break-all;
   color: var(--texto);
 }
+/* ============ Barra de "Aplicar a todos" ============ */
+.bulk-bar {
+  background: var(--card);
+  border: 1px solid var(--borda);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  box-shadow: var(--sombra);
+}
+.bulk-titulo {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--verde-profundo);
+  margin-bottom: .6rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.bulk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+
+@media (max-width: 480px) {
+  .bulk-grid { grid-template-columns: 1fr; }
+}

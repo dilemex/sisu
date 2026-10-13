@@ -179,3 +179,54 @@ export async function createTransfer(familyId, {
   if (error) throw error
   return data
 }
+/**
+ * Cria uma transação que já É uma parcela de uma compra maior.
+ * Antes de criar, procura se JÁ existe um grupo com a mesma descrição,
+ * mesmo total e mesma conta/cartão — se existir, usa o mesmo grupo.
+ * Isso permite que imports de meses diferentes liguem as parcelas.
+ */
+export async function createSingleInstallment(familyId, payload, { parcelaAtual, parcelaTotal }) {
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Tenta achar um grupo existente
+  let groupId = null
+  const descricaoLimpa = (payload.description || '').trim()
+
+  if (descricaoLimpa) {
+    let q = supabase
+      .from('transactions')
+      .select('installment_group_id')
+      .eq('family_id', familyId)
+      .eq('description', descricaoLimpa)
+      .eq('installment_total', parcelaTotal)
+      .not('installment_group_id', 'is', null)
+
+    if (payload.credit_card_id) {
+      q = q.eq('credit_card_id', payload.credit_card_id)
+    } else if (payload.account_id) {
+      q = q.eq('account_id', payload.account_id)
+    }
+
+    const { data: existente } = await q.limit(1)
+    if (existente && existente.length > 0) {
+      groupId = existente[0].installment_group_id
+    }
+  }
+
+  if (!groupId) groupId = crypto.randomUUID()
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .insert({
+      ...payload,
+      family_id: familyId,
+      installment_group_id: groupId,
+      installment_number: parcelaAtual,
+      installment_total: parcelaTotal,
+      created_by: user.id
+    })
+    .select(SELECT)
+    .single()
+  if (error) throw error
+  return data
+}
